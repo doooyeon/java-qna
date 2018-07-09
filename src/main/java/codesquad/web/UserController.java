@@ -2,6 +2,7 @@ package codesquad.web;
 
 import codesquad.web.domain.User;
 import codesquad.web.domain.UserRepository;
+import codesquad.web.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequestMapping("/users")
 public class UserController {
-
     @Autowired
     private UserRepository userRepository;
 
@@ -28,25 +28,23 @@ public class UserController {
 
     @GetMapping("/{id}")
     public String show(@PathVariable long id, Model model) {
-        User user = userRepository.findById(id).get();
-        model.addAttribute("user", user);
+        model.addAttribute("user", Util.findUserById(id, userRepository));
         return "/user/profile";
     }
 
     @GetMapping("/{id}/form")
     public String updateForm(@PathVariable long id,  Model model) {
-        User user = userRepository.findById(id).get();
-        model.addAttribute("user", user);
+        model.addAttribute("user", Util.findUserById(id, userRepository));
         return "/user/updateForm";
     }
 
-    @PutMapping("/{id}/update")
+    @PutMapping("/{id}")
     public String update(@PathVariable long id, User newUser){
-        User user = userRepository.findById(id).get();
-        user.setPassword(newUser.getPassword());
-        user.setName(newUser.getName());
-        user.setEmail(newUser.getEmail());
-        userRepository.save(user);
+        User user = Util.findUserById(id, userRepository);
+        if (user.isEqualPassword(newUser)) {
+            user.update(newUser);
+            userRepository.save(user);
+        }
         return "redirect:/users";
     }
 }

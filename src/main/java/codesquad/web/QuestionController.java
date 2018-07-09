@@ -2,56 +2,47 @@ package codesquad.web;
 
 import codesquad.web.domain.Question;
 import codesquad.web.domain.QuestionRepository;
+import codesquad.web.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
+@RequestMapping("/questions")
 public class QuestionController {
     @Autowired
     private QuestionRepository questionRepository;
 
-    @PostMapping("/questions")
+    @PostMapping
     public String create(Question question) {
         questionRepository.save(question);
         return "redirect:/";
     }
 
-    @GetMapping("/")
-    public String list(Model model){
-        model.addAttribute("questions", questionRepository.findAll());
-        return "/index";
-    }
-
-    @GetMapping("/questions/{id}")
+    @GetMapping("/{id}")
     public String show(@PathVariable long id, Model model){
-        Question question = questionRepository.findById(id).get();
-        model.addAttribute("question", question);
+        model.addAttribute("question", Util.findQuestionById(id, questionRepository));
         return "/qna/show";
     }
 
-    @GetMapping("/questions/{id}/form")
+    @GetMapping("/{id}/form")
     public String updateForm(@PathVariable long id, Model model) {
-        Question question = questionRepository.findById(id).get();
-        model.addAttribute("question", question);
-        System.out.println("came into updateForm");
+        model.addAttribute("question", Util.findQuestionById(id, questionRepository));
         return "/qna/updateForm";
     }
 
-    @PutMapping("/questions/{id}/update")
+    @PutMapping("/{id}")
     public String update(@PathVariable long id, Question newQuestion) {
-        Question question = questionRepository.findById(id).get();
-        question.setTitle(newQuestion.getTitle());
-        question.setWriter(newQuestion.getWriter());
-        question.setContents(newQuestion.getContents());
+        Question question = Util.findQuestionById(id, questionRepository);
+        question.update(newQuestion);
         questionRepository.save(question);
         return "redirect:/";
     }
-    @DeleteMapping("/questions/{id}")
+
+    @DeleteMapping("/{id}")
     public String delete(@PathVariable long id){
-        Question question = questionRepository.findById(id).get();
-        questionRepository.delete(question);
+        questionRepository.delete(Util.findQuestionById(id, questionRepository));
         return "redirect:/";
     }
 }

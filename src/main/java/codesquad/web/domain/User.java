@@ -63,4 +63,13 @@ public class User {
     public String getEmail() {
         return email;
     }
+
+    public void update(User newUser) {
+        this.name = newUser.getName();
+        this.email = newUser.getEmail();
+    }
+
+    public boolean isEqualPassword(User newUser) {
+        return this.password.equals(newUser.getPassword());
+    }
 }
