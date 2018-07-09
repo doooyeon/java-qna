@@ -31,4 +31,16 @@ public class UserController {
         model.addAttribute("users", users.get(index));
         return "/user/profile";
     }
+
+    @GetMapping("/users/{index}/form")
+    public String updateForm(@PathVariable int index,  Model model) {
+        model.addAttribute("user", users.get(index));
+        return "/user/updateForm";
+    }
+
+    @PostMapping("/users/{index}/update")
+    public String update(@PathVariable int index, User user){
+        users.set(index, user);
+        return "redirect:/users";
+    }
 }

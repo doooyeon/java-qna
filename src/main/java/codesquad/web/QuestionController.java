@@ -28,7 +28,7 @@ public class QuestionController {
 
     @GetMapping("/questions/{index}")
     public String show(@PathVariable int index, Model model){
-        model.addAttribute("question", questions.get(index));
+        model.addAttribute("question", questions.get(index - 1));
         return "/qna/show";
     }
 
