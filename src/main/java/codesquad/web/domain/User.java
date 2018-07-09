@@ -1,6 +1,14 @@
 package codesquad.web.domain;
 
+import javax.persistence.*;
+
+@Entity
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Primary Key 자동 증가
+    private Long id;
+
+    @Column(length = 30, unique = true, nullable = false)
     private String userId;
     private String password;
     private String name;
@@ -14,6 +22,10 @@ public class User {
         this.password = password;
         this.name = name;
         this.email = email;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void setUserId(String userId) {
@@ -30,6 +42,10 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getUserId() {
