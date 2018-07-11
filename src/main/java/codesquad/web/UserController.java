@@ -1,6 +1,7 @@
 package codesquad.web;
 
 import codesquad.domain.User;
+import codesquad.exception.UnAuthorizedDeleteException;
 import codesquad.repository.UserRepository;
 import codesquad.exception.InvalidLoginException;
 import codesquad.util.SessionUtil;
@@ -14,7 +15,6 @@ import javax.servlet.http.HttpSession;
 @Controller
 @RequestMapping("/users")
 public class UserController {
-
     @Autowired
     private UserRepository userRepository;
 
@@ -69,7 +69,7 @@ public class UserController {
     @PutMapping("/{id}")
     public String update(@PathVariable Long id, User user, HttpSession session) {
         if(!SessionUtil.checkLoginUser(session, user)) {
-            throw new InvalidLoginException("다른 사용자의 정보는 수정할 수 없습니다.");
+            throw new UnAuthorizedDeleteException("다른 사용자의 정보는 수정할 수 없습니다.");
         }
 
         User dbUser =  userRepository.findById(id).get();

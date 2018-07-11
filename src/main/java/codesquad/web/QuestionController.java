@@ -2,6 +2,7 @@ package codesquad.web;
 
 import codesquad.domain.Answer;
 import codesquad.domain.Question;
+import codesquad.exception.UnAuthorizedDeleteException;
 import codesquad.repository.AnswerRepository;
 import codesquad.repository.QuestionRepository;
 import codesquad.exception.InvalidLoginException;
@@ -12,12 +13,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.util.List;
 
 @Controller
 @RequestMapping("/qnas")
 public class QuestionController {
-
     @Autowired
     private AnswerRepository answerRepository;
 
@@ -40,10 +39,10 @@ public class QuestionController {
 
     @GetMapping("/{id}")
     public String show(@PathVariable Long id, Model model) {
-        model.addAttribute("qna", questionRepository.findById(id).get());
-        List<Answer> answers = answerRepository.findByQuestionId(id);
-        model.addAttribute("answers", answers);
-        model.addAttribute("answerCount", answers.size());
+        Question question = questionRepository.findById(id).get();
+        model.addAttribute("qna", question);
+        model.addAttribute("answers", question.getAnswers());
+        model.addAttribute("answerCount", question.getAnswers().size());
         return "/qna/show";
     }
 
@@ -58,7 +57,7 @@ public class QuestionController {
     public String updateForm(@PathVariable("id") Question question, Model model, HttpSession session) {
         if (!question.matchWriter(SessionUtil.getUser(session)
                 .orElseThrow(() -> new InvalidLoginException("로그인이 필요합니다")).getUserId())) {
-            throw new InvalidLoginException("다른 사용자의 글을 수정할 수는 없습니다.");
+            throw new UnAuthorizedDeleteException("다른 사용자의 글을 수정할 수는 없습니다.");
         }
         model.addAttribute("qna", question);
         return "/qna/updateForm";
@@ -78,9 +77,14 @@ public class QuestionController {
 
         Question question = questionRepository.findById(id).get();
         if (!question.matchWriter(SessionUtil.getUserId(session))) {
-            throw new InvalidLoginException("다른 사용자의 글을 삭제할 수는 없습니다.");
+            throw new UnAuthorizedDeleteException("다른 사용자의 글을 삭제할 수는 없습니다.");
         }
-        questionRepository.deleteById(id);
+        if(!question.checkDeleteAnswer()) {
+            throw new UnAuthorizedDeleteException("질문을 삭제할 수 없습니다.");
+        }
+
+        deleteAnswers(question);
+        deleteQuestions(question);
         return "redirect:/qnas";
     }
 
@@ -93,9 +97,25 @@ public class QuestionController {
     }
 
     @DeleteMapping("/{questionId}/answers/{answerId}")
-    public String delete(@PathVariable Long questionId, @PathVariable Long answerId) {
-        answerRepository.deleteById(answerId);
+    public String delete(@PathVariable Long questionId, @PathVariable Long answerId, HttpSession session) {
+        Answer answer = answerRepository.findById(answerId).get();
+        if(!answer.matchWriter(SessionUtil.getUser(session).get())) {
+            throw new UnAuthorizedDeleteException("다른 사람의 댓글을 삭제할 수 없습니다.");
+        }
+        answer.setDeleted(true);
+        answerRepository.save(answer);
         return "redirect:/qnas/" + questionId;
     }
 
+    private void deleteQuestions(Question question) {
+        question.setDeleted(true);
+        questionRepository.save(question);
+    }
+
+    private void deleteAnswers(Question question) {
+        for (Answer answer : question.getAnswers()) {
+            answer.setDeleted(true);
+            answerRepository.save(answer);
+        }
+    }
 }

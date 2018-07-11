@@ -1,10 +1,11 @@
 package codesquad.domain;
 
+import org.hibernate.annotations.Where;
+
 import javax.persistence.*;
 
 @Entity
 public class Answer {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,6 +20,8 @@ public class Answer {
     @OneToOne
     @JoinColumn(foreignKey = @ForeignKey(name = "fk_answer_to_user"))
     private User writer;
+
+    private boolean deleted = false;
 
     public Answer() {
     }
@@ -61,4 +64,17 @@ public class Answer {
     public void setWriter(User writer) {
         this.writer = writer;
     }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public boolean matchWriter(User writer) {
+        return this.writer.equals(writer);
+    }
+
 }
