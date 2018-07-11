@@ -1,7 +1,7 @@
 package codesquad.web;
 
 import codesquad.domain.User;
-import codesquad.domain.UserRepository;
+import codesquad.repository.UserRepository;
 import codesquad.exception.InvalidLoginException;
 import codesquad.util.SessionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +10,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/users")
@@ -28,6 +27,12 @@ public class UserController {
         }
 
         SessionUtil.setUser(session, user);
+        return "redirect:/";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        SessionUtil.removeUser(session);
         return "redirect:/";
     }
 
@@ -50,8 +55,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}/form")
-    public String updateForm(@PathVariable Long id, Model model) {
+    public String form(@PathVariable Long id, Model model) {
         model.addAttribute("user", userRepository.findById(id).get());
+        return "/user/updateForm";
+    }
+
+    @GetMapping("/updateForm")
+    public String updateForm(Model model, HttpSession session) {
+        model.addAttribute("user", SessionUtil.getUser(session).get());
         return "/user/updateForm";
     }
 

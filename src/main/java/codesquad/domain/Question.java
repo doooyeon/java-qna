@@ -14,15 +14,15 @@ public class Question {
 
     @Column(nullable = false, length = 40)
     private String title;
-    private String content;
+    private String contents;
 
     public Question() {
     }
 
-    public Question(User writer, String title, String content) {
+    public Question(User writer, String title, String contents) {
         this.writer = writer;
         this.title = title;
-        this.content = content;
+        this.contents = contents;
     }
 
     public Long getId() {
@@ -41,8 +41,8 @@ public class Question {
         this.title = title;
     }
 
-    public String getContent() {
-        return content;
+    public String getContents() {
+        return contents;
     }
 
     public User getWriter() {
@@ -53,13 +53,13 @@ public class Question {
         this.writer = writer;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setContents(String contents) {
+        this.contents = contents;
     }
 
     public Question updateQuestion(Question question) {
         this.title = question.title;
-        this.content = question.content;
+        this.contents = question.contents;
         return this;
     }
 

@@ -1,7 +1,9 @@
 package codesquad.web;
 
+import codesquad.domain.Answer;
 import codesquad.domain.Question;
-import codesquad.domain.QuestionRepository;
+import codesquad.repository.AnswerRepository;
+import codesquad.repository.QuestionRepository;
 import codesquad.exception.InvalidLoginException;
 import codesquad.util.SessionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +12,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 @Controller
 @RequestMapping("/qnas")
 public class QuestionController {
+
+    @Autowired
+    private AnswerRepository answerRepository;
 
     @Autowired
     private QuestionRepository questionRepository;
@@ -35,6 +41,9 @@ public class QuestionController {
     @GetMapping("/{id}")
     public String show(@PathVariable Long id, Model model) {
         model.addAttribute("qna", questionRepository.findById(id).get());
+        List<Answer> answers = answerRepository.findByQuestionId(id);
+        model.addAttribute("answers", answers);
+        model.addAttribute("answerCount", answers.size());
         return "/qna/show";
     }
 
@@ -73,6 +82,20 @@ public class QuestionController {
         }
         questionRepository.deleteById(id);
         return "redirect:/qnas";
+    }
+
+    @PostMapping("/{questionId}/answers")
+    public String create(@PathVariable Long questionId, Answer answer, HttpSession session) {
+        answer.setQuestion(questionRepository.findById(questionId).get());
+        answer.setWriter(SessionUtil.getUser(session).get());
+        answerRepository.save(answer);
+        return "redirect:/qnas/" + questionId;
+    }
+
+    @DeleteMapping("/{questionId}/answers/{answerId}")
+    public String delete(@PathVariable Long questionId, @PathVariable Long answerId) {
+        answerRepository.deleteById(answerId);
+        return "redirect:/qnas/" + questionId;
     }
 
 }
