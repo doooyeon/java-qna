@@ -79,12 +79,7 @@ public class QuestionController {
         if (!question.matchWriter(SessionUtil.getUserId(session))) {
             throw new UnAuthorizedDeleteException("다른 사용자의 글을 삭제할 수는 없습니다.");
         }
-        if(!question.checkDeleteAnswer()) {
-            throw new UnAuthorizedDeleteException("질문을 삭제할 수 없습니다.");
-        }
-
-        deleteAnswers(question);
-        deleteQuestions(question);
+        questionRepository.save(question.delete(SessionUtil.getUser(session).get()));
         return "redirect:/qnas";
     }
 
@@ -102,20 +97,7 @@ public class QuestionController {
         if(!answer.matchWriter(SessionUtil.getUser(session).get())) {
             throw new UnAuthorizedDeleteException("다른 사람의 댓글을 삭제할 수 없습니다.");
         }
-        answer.setDeleted(true);
-        answerRepository.save(answer);
+        answerRepository.save(answer.delete());
         return "redirect:/qnas/" + questionId;
-    }
-
-    private void deleteQuestions(Question question) {
-        question.setDeleted(true);
-        questionRepository.save(question);
-    }
-
-    private void deleteAnswers(Question question) {
-        for (Answer answer : question.getAnswers()) {
-            answer.setDeleted(true);
-            answerRepository.save(answer);
-        }
     }
 }

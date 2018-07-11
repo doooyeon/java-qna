@@ -1,11 +1,13 @@
 package codesquad.domain;
 
+import codesquad.exception.UnAuthorizedDeleteException;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.List;
 
 @Entity
+@Where(clause = "deleted = false")
 public class Question {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +22,7 @@ public class Question {
 
     private String contents;
 
-    @OneToMany(mappedBy = "question")
+    @OneToMany(mappedBy = "question", fetch = FetchType.LAZY)
     @Where(clause = "deleted = false")
     @OrderBy("id ASC")
     private List<Answer> answers;
@@ -94,13 +96,28 @@ public class Question {
         return this.writer.matchUserId(userId);
     }
 
-    public boolean checkDeleteAnswer() {
+    public boolean checkDeleteAnswer(User loginUser) {
         if (this.answers.size() == 0) {
             return true;
         }
         if(this.answers.stream().filter(answer -> !answer.matchWriter(this.writer)).findFirst().isPresent()) {
             return false;
         }
+        if(!this.writer.equals(loginUser)) {
+            return false;
+        }
         return true;
+    }
+
+    public Question delete(User loginUser) {
+        if (!checkDeleteAnswer(loginUser)) {
+            throw new UnAuthorizedDeleteException("질문을 삭제할 수 없습니다.");
+        }
+
+        this.deleted = true;
+        for (Answer answer : answers) {
+            answer.delete();
+        }
+        return this;
     }
 }

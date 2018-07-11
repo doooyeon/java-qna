@@ -1,6 +1,6 @@
 package codesquad.domain;
 
-import org.hibernate.annotations.Where;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 
@@ -15,6 +15,7 @@ public class Answer {
 
     @ManyToOne
     @JoinColumn(foreignKey = @ForeignKey(name = "fk_answer_to_question"))
+    @JsonIgnore
     private Question question;
 
     @OneToOne
@@ -75,6 +76,11 @@ public class Answer {
 
     public boolean matchWriter(User writer) {
         return this.writer.equals(writer);
+    }
+
+    public Answer delete() {
+        this.deleted = true;
+        return this;
     }
 
 }
