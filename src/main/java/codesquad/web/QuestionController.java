@@ -83,13 +83,13 @@ public class QuestionController {
         return "redirect:/qnas";
     }
 
-    @PostMapping("/{questionId}/answers")
-    public String create(@PathVariable Long questionId, Answer answer, HttpSession session) {
-        answer.setQuestion(questionRepository.findById(questionId).get());
-        answer.setWriter(SessionUtil.getUser(session).get());
-        answerRepository.save(answer);
-        return "redirect:/qnas/" + questionId;
-    }
+//    @PostMapping("/{questionId}/answers")
+//    public String create(@PathVariable Long questionId, Answer answer, HttpSession session) {
+//        answer.setQuestion(questionRepository.findById(questionId).get());
+//        answer.setWriter(SessionUtil.getUser(session).get());
+//        answerRepository.save(answer);
+//        return "redirect:/qnas/" + questionId;
+//    }
 
     @DeleteMapping("/{questionId}/answers/{answerId}")
     public String delete(@PathVariable Long questionId, @PathVariable Long answerId, HttpSession session) {
